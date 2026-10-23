@@ -100,7 +100,7 @@ components:
         user: { $ref: '#/components/schemas/User' }
     User:
       type: object
-      required: [id, login, fullName, role]
+      required: [id, login, fullName, role, createdAt]
       properties:
         id: { type: string, format: uuid }
         login: { type: string }
@@ -108,6 +108,7 @@ components:
         role: { type: string, enum: [RESIDENT, ADMIN] }
         blockId: { type: string, format: uuid, nullable: true }
         roomNumber: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
     Error:
       type: object
       required: [code, message]
