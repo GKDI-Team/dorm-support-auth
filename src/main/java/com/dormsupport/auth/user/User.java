@@ -10,7 +10,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -19,8 +21,8 @@ import java.time.Instant;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, length = 64)
     private String login;
@@ -36,7 +38,7 @@ public class User {
     private UserRole role;
 
     @Column(name = "block_id")
-    private Long blockId;
+    private UUID blockId;
 
     @Column(name = "room_number", length = 20)
     private String roomNumber;
@@ -49,7 +51,7 @@ public class User {
     }
 
     public User(String login, String passwordHash, String fullName, UserRole role,
-                Long blockId, String roomNumber) {
+                UUID blockId, String roomNumber) {
         this.login = login;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
@@ -68,7 +70,7 @@ public class User {
         }
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -104,11 +106,11 @@ public class User {
         this.role = role;
     }
 
-    public Long getBlockId() {
+    public UUID getBlockId() {
         return blockId;
     }
 
-    public void setBlockId(Long blockId) {
+    public void setBlockId(UUID blockId) {
         this.blockId = blockId;
     }
 

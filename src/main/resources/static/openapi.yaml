@@ -84,7 +84,7 @@ components:
         login: { type: string, minLength: 3, maxLength: 64 }
         password: { type: string, minLength: 8, maxLength: 128, format: password }
         fullName: { type: string, minLength: 1, maxLength: 150 }
-        blockId: { type: integer, format: int64, minimum: 1 }
+        blockId: { type: string, format: uuid }
         roomNumber: { type: string, maxLength: 20 }
     LoginRequest:
       type: object
@@ -102,11 +102,11 @@ components:
       type: object
       required: [id, login, fullName, role]
       properties:
-        id: { type: integer, format: int64 }
+        id: { type: string, format: uuid }
         login: { type: string }
         fullName: { type: string }
         role: { type: string, enum: [RESIDENT, ADMIN] }
-        blockId: { type: integer, format: int64, nullable: true }
+        blockId: { type: string, format: uuid, nullable: true }
         roomNumber: { type: string, nullable: true }
     Error:
       type: object
