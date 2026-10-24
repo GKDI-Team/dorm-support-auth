@@ -129,7 +129,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Unauthorized:
-      description: Missing or invalid session
+      description: Invalid credentials or missing, expired or revoked session
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

@@ -3,6 +3,7 @@ package com.dormsupport.auth.api;
 import com.dormsupport.auth.service.LoginAlreadyExistsException;
 import com.dormsupport.auth.service.AdminAccessRequiredException;
 import com.dormsupport.auth.service.InvalidUserRoleException;
+import com.dormsupport.auth.service.InvalidCredentialsException;
 import com.dormsupport.auth.service.SessionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleSessionNotFound() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiError("UNAUTHORIZED", "Session is missing, expired or revoked"));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentials() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError("INVALID_CREDENTIALS", "Invalid login or password"));
     }
 
     @ExceptionHandler(AdminAccessRequiredException.class)
