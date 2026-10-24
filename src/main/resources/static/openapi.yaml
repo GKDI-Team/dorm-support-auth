@@ -20,7 +20,7 @@ paths:
       tags: [Auth]
       summary: Create a user account
       security:
-        - SessionId: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -54,7 +54,7 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Session created
+          description: JWT access token created
           content:
             application/json:
               schema:
@@ -66,7 +66,7 @@ paths:
       tags: [Auth]
       summary: Get the current user
       security:
-        - SessionId: []
+        - BearerAuth: []
       responses:
         '200':
           description: Current user
@@ -80,36 +80,15 @@ paths:
     post:
       tags: [Auth]
       summary: Revoke the current session
-      security:
-        - SessionId: []
       responses:
         '204':
-          description: Session revoked
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /internal/v1/sessions/{sessionId}:
-    get:
-      tags: [Internal]
-      summary: Validate a session for internal services
-      parameters:
-        - name: sessionId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Active session information
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/SessionInfo' }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: Client should remove the token
 components:
   securitySchemes:
-    SessionId:
-      type: apiKey
-      in: header
-      name: X-Session-Id
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     CreateUserRequest:
       type: object
@@ -129,16 +108,9 @@ components:
         password: { type: string, format: password }
     LoginResponse:
       type: object
-      required: [sessionId, user]
+      required: [accessToken, user]
       properties:
-        sessionId: { type: string, format: uuid }
-        user: { $ref: '#/components/schemas/User' }
-    SessionInfo:
-      type: object
-      required: [sessionId, expiresAt, user]
-      properties:
-        sessionId: { type: string, format: uuid }
-        expiresAt: { type: string, format: date-time }
+        accessToken: { type: string }
         user: { $ref: '#/components/schemas/User' }
     User:
       type: object
@@ -164,7 +136,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Unauthorized:
-      description: Invalid credentials or missing, expired or revoked session
+      description: Invalid credentials or missing, invalid or expired JWT
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

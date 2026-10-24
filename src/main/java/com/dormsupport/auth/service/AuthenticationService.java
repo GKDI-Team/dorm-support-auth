@@ -2,38 +2,29 @@ package com.dormsupport.auth.service;
 
 import com.dormsupport.auth.api.LoginRequest;
 import com.dormsupport.auth.api.LoginResponse;
-import com.dormsupport.auth.api.SessionInfoResponse;
 import com.dormsupport.auth.api.UserResponse;
-import com.dormsupport.auth.session.Session;
-import com.dormsupport.auth.session.SessionRepository;
 import com.dormsupport.auth.user.User;
 import com.dormsupport.auth.user.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.UUID;
 
 @Service
 public class AuthenticationService {
 
     private final UserRepository userRepository;
-    private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
-    private final Duration sessionTtl;
+    private final JwtService jwtService;
 
     public AuthenticationService(
             UserRepository userRepository,
-            SessionRepository sessionRepository,
             PasswordEncoder passwordEncoder,
-            @Value("${auth.session.ttl:24h}") Duration sessionTtl) {
+            JwtService jwtService) {
         this.userRepository = userRepository;
-        this.sessionRepository = sessionRepository;
         this.passwordEncoder = passwordEncoder;
-        this.sessionTtl = sessionTtl;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -45,37 +36,16 @@ public class AuthenticationService {
             throw new InvalidCredentialsException();
         }
 
-        Session session = new Session(user, Instant.now().plus(sessionTtl));
-        Session savedSession = sessionRepository.saveAndFlush(session);
-        return new LoginResponse(savedSession.getId(), UserResponse.from(user));
+        return new LoginResponse(jwtService.createToken(user), UserResponse.from(user));
     }
 
     @Transactional(readOnly = true)
-    public UserResponse currentUser(UUID sessionId) {
-        return UserResponse.from(activeSession(sessionId).getUser());
+    public UserResponse currentUser(String accessToken) {
+        return UserResponse.from(userByToken(accessToken));
     }
 
-    @Transactional(readOnly = true)
-    public SessionInfoResponse validateSession(UUID sessionId) {
-        Session session = activeSession(sessionId);
-        return new SessionInfoResponse(
-                session.getId(),
-                session.getExpiresAt(),
-                UserResponse.from(session.getUser()));
-    }
-
-    @Transactional
-    public void logout(UUID sessionId) {
-        sessionRepository.findById(sessionId).ifPresent(session -> {
-            if (session.getRevokedAt() == null) {
-                session.revoke();
-            }
-        });
-    }
-
-    private Session activeSession(UUID sessionId) {
-        return sessionRepository
-                .findByIdAndRevokedAtIsNullAndExpiresAtAfter(sessionId, Instant.now())
-                .orElseThrow(SessionNotFoundException::new);
+    private User userByToken(String accessToken) {
+        UUID userId = jwtService.getUserId(accessToken);
+        return userRepository.findById(userId).orElseThrow(InvalidTokenException::new);
     }
 }

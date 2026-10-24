@@ -4,13 +4,14 @@ import com.dormsupport.auth.service.LoginAlreadyExistsException;
 import com.dormsupport.auth.service.AdminAccessRequiredException;
 import com.dormsupport.auth.service.InvalidUserRoleException;
 import com.dormsupport.auth.service.InvalidCredentialsException;
-import com.dormsupport.auth.service.SessionNotFoundException;
+import com.dormsupport.auth.service.InvalidTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,10 +22,16 @@ public class GlobalExceptionHandler {
                 .body(new ApiError("LOGIN_ALREADY_EXISTS", "Login is already registered"));
     }
 
-    @ExceptionHandler(SessionNotFoundException.class)
-    public ResponseEntity<ApiError> handleSessionNotFound() {
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiError> handleInvalidToken() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiError("UNAUTHORIZED", "Session is missing, expired or revoked"));
+                .body(new ApiError("UNAUTHORIZED", "Bearer token is missing, invalid or expired"));
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiError> handleMissingHeader() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiError("UNAUTHORIZED", "Authorization Bearer token is required"));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

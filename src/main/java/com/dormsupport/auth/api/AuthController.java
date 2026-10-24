@@ -6,14 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/")
@@ -35,30 +33,29 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> currentUser(
-            @RequestHeader("X-Session-Id") UUID sessionId) {
-        return ResponseEntity.ok(authenticationService.currentUser(sessionId));
+            @RequestHeader("Authorization") String authorization) {
+        return ResponseEntity.ok(authenticationService.currentUser(bearerToken(authorization)));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @RequestHeader("X-Session-Id") UUID sessionId) {
-        authenticationService.logout(sessionId);
+    public ResponseEntity<Void> logout() {
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/internal/v1/sessions/{sessionId}")
-    public ResponseEntity<SessionInfoResponse> validateSession(
-            @PathVariable UUID sessionId) {
-        return ResponseEntity.ok(authenticationService.validateSession(sessionId));
     }
 
     @PostMapping("/admin/users")
     public ResponseEntity<UserResponse> createUser(
-            @RequestHeader("X-Session-Id") UUID sessionId,
+            @RequestHeader("Authorization") String authorization,
             @Valid @RequestBody CreateUserRequest request) {
-        UserResponse response = authService.createUser(request, sessionId);
+        UserResponse response = authService.createUser(request, bearerToken(authorization));
         return ResponseEntity
                 .created(URI.create("/api/v1/admin/users/" + response.id()))
                 .body(response);
+    }
+
+    private static String bearerToken(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new com.dormsupport.auth.service.InvalidTokenException();
+        }
+        return authorization.substring("Bearer ".length()).trim();
     }
 }

@@ -2,8 +2,6 @@ package com.dormsupport.auth.service;
 
 import com.dormsupport.auth.api.CreateUserRequest;
 import com.dormsupport.auth.api.UserResponse;
-import com.dormsupport.auth.session.Session;
-import com.dormsupport.auth.session.SessionRepository;
 import com.dormsupport.auth.user.User;
 import com.dormsupport.auth.user.UserRepository;
 import com.dormsupport.auth.user.UserRole;
@@ -12,32 +10,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
-            SessionRepository sessionRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
         this.userRepository = userRepository;
-        this.sessionRepository = sessionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @Transactional
-    public UserResponse createUser(CreateUserRequest request, UUID sessionId) {
-        Session session = sessionRepository
-                .findByIdAndRevokedAtIsNullAndExpiresAtAfter(sessionId, Instant.now())
-                .orElseThrow(SessionNotFoundException::new);
+    public UserResponse createUser(CreateUserRequest request, String accessToken) {
+        User creator = userRepository.findById(jwtService.getUserId(accessToken))
+                .orElseThrow(InvalidTokenException::new);
 
-        if (session.getUser().getRole() != UserRole.ADMIN) {
+        if (creator.getRole() != UserRole.ADMIN) {
             throw new AdminAccessRequiredException();
         }
 
