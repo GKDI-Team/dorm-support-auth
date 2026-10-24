@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class AuthService {
 
@@ -57,5 +59,12 @@ public class AuthService {
             // Protect against a concurrent registration with the same login.
             throw new LoginAlreadyExistsException();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserProfile(UUID userId) {
+        return userRepository.findById(userId)
+                .map(UserResponse::from)
+                .orElseThrow(UserNotFoundException::new);
     }
 }

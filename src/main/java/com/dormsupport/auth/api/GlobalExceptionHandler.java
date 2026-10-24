@@ -5,6 +5,7 @@ import com.dormsupport.auth.service.AdminAccessRequiredException;
 import com.dormsupport.auth.service.InvalidUserRoleException;
 import com.dormsupport.auth.service.InvalidCredentialsException;
 import com.dormsupport.auth.service.InvalidTokenException;
+import com.dormsupport.auth.service.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,6 +27,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidToken() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiError("UNAUTHORIZED", "Bearer token is missing, invalid or expired"));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiError> handleUserNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiError("USER_NOT_FOUND", "User was not found"));
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)

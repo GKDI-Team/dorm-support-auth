@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/")
@@ -50,6 +52,11 @@ public class AuthController {
         return ResponseEntity
                 .created(URI.create("/api/v1/admin/users/" + response.id()))
                 .body(response);
+    }
+
+    @GetMapping("/internal/v1/users/{userId}")
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable UUID userId) {
+        return ResponseEntity.ok(authService.getUserProfile(userId));
     }
 
     private static String bearerToken(String authorization) {

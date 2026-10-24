@@ -83,6 +83,23 @@ paths:
       responses:
         '204':
           description: Client should remove the token
+  /internal/v1/users/{userId}:
+    get:
+      tags: [Internal]
+      summary: Get a user profile for internal services
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '404':
+          description: User not found
 components:
   securitySchemes:
     BearerAuth:
