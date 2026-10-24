@@ -2,6 +2,7 @@ package com.dormsupport.auth.service;
 
 import com.dormsupport.auth.api.LoginRequest;
 import com.dormsupport.auth.api.LoginResponse;
+import com.dormsupport.auth.api.SessionInfoResponse;
 import com.dormsupport.auth.api.UserResponse;
 import com.dormsupport.auth.session.Session;
 import com.dormsupport.auth.session.SessionRepository;
@@ -51,10 +52,30 @@ public class AuthenticationService {
 
     @Transactional(readOnly = true)
     public UserResponse currentUser(UUID sessionId) {
-        Session session = sessionRepository
+        return UserResponse.from(activeSession(sessionId).getUser());
+    }
+
+    @Transactional(readOnly = true)
+    public SessionInfoResponse validateSession(UUID sessionId) {
+        Session session = activeSession(sessionId);
+        return new SessionInfoResponse(
+                session.getId(),
+                session.getExpiresAt(),
+                UserResponse.from(session.getUser()));
+    }
+
+    @Transactional
+    public void logout(UUID sessionId) {
+        sessionRepository.findById(sessionId).ifPresent(session -> {
+            if (session.getRevokedAt() == null) {
+                session.revoke();
+            }
+        });
+    }
+
+    private Session activeSession(UUID sessionId) {
+        return sessionRepository
                 .findByIdAndRevokedAtIsNullAndExpiresAtAfter(sessionId, Instant.now())
                 .orElseThrow(SessionNotFoundException::new);
-
-        return UserResponse.from(session.getUser());
     }
 }
