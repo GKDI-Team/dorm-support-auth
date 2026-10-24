@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: DormSupport Identity API
   version: 0.1.0
-  description: Registration, login and current-user operations for the MVP.
+  description: Admin-managed user accounts, login and current-user operations for the MVP.
 servers:
   - url: http://localhost:8080
 tags:
@@ -15,25 +15,31 @@ paths:
       responses:
         '200':
           description: Service is available
-  /api/v1/auth/register:
+  /api/v1/admin/users:
     post:
       tags: [Auth]
-      summary: Register a resident
+      summary: Create a user account
+      security:
+        - SessionId: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: '#/components/schemas/CreateUserRequest'
       responses:
         '201':
-          description: Resident registered
+          description: User account created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Administrator role required
         '409':
           description: Login already exists
   /api/v1/auth/login:
@@ -77,13 +83,14 @@ components:
       in: header
       name: X-Session-Id
   schemas:
-    RegisterRequest:
+    CreateUserRequest:
       type: object
-      required: [login, password, fullName, blockId, roomNumber]
+      required: [login, password, fullName, role, blockId, roomNumber]
       properties:
         login: { type: string, minLength: 3, maxLength: 64 }
         password: { type: string, minLength: 8, maxLength: 128, format: password }
         fullName: { type: string, minLength: 1, maxLength: 150 }
+        role: { type: string, enum: [RESIDENT, REVIEWER] }
         blockId: { type: string, format: uuid }
         roomNumber: { type: string, maxLength: 20 }
     LoginRequest:
@@ -105,7 +112,7 @@ components:
         id: { type: string, format: uuid }
         login: { type: string }
         fullName: { type: string }
-        role: { type: string, enum: [RESIDENT, ADMIN] }
+        role: { type: string, enum: [RESIDENT, REVIEWER, ADMIN] }
         blockId: { type: string, format: uuid, nullable: true }
         roomNumber: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
