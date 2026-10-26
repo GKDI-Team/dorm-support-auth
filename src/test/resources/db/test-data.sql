@@ -1,0 +1,2 @@
+-- TODO: Add optional deterministic test users and database fixtures.
+-- TODO: Use only test data; do not put real credentials here.

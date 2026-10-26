@@ -1,0 +1,3 @@
+# TODO: Add test profile configuration.
+# TODO: Configure an isolated test database and test JWT secret.
+# TODO: Keep test settings separate from local Docker settings.
