@@ -9,6 +9,6 @@ public record LoginRequest(
         String login,
 
         @NotBlank
-        @Size(min = 8, max = 128)
+        @Size(min = 6, max = 128)
         String password) {
 }
