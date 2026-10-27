@@ -53,13 +53,15 @@ public class InitialUsersSeeder implements CommandLineRunner {
                 fullName,
                 role,
                 role == UserRole.RESIDENT ? DEVELOPMENT_BLOCK_ID : null,
-                roomNumber)));
+                roomNumber
+        )));
 
         if (role == UserRole.RESIDENT
                 && (user.getBlockId() == null || user.getRoomNumber() == null)) {
             user.setBlockId(DEVELOPMENT_BLOCK_ID);
             user.setRoomNumber(roomNumber);
-            userRepository.save(user);
         }
+
+        userRepository.save(user);
     }
 }
