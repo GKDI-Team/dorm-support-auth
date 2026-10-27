@@ -47,13 +47,13 @@ public class InitialUsersSeeder implements CommandLineRunner {
     }
 
     private void seed(String login, String fullName, UserRole role, String roomNumber) {
-        User user = userRepository.findByLogin(login).orElseGet(() -> new User(
+        User user = userRepository.findByLogin(login).orElseGet(() -> userRepository.save(new User(
                 login,
                 passwordEncoder.encode(DEVELOPMENT_PASSWORD),
                 fullName,
                 role,
                 role == UserRole.RESIDENT ? DEVELOPMENT_BLOCK_ID : null,
-                roomNumber));
+                roomNumber)));
 
         if (role == UserRole.RESIDENT
                 && (user.getBlockId() == null || user.getRoomNumber() == null)) {
