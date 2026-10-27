@@ -65,7 +65,7 @@ class InitialUsersSeederTest {
 
         verify(userRepository, times(8)).findByLogin(anyString());
         verify(passwordEncoder, times(8)).encode(DEVELOPMENT_PASSWORD);
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, times(8)).save(any(User.class));
     }
 
     @Test
