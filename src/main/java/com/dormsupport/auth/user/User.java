@@ -37,8 +37,8 @@ public class User {
     @Column(nullable = false, length = 20)
     private UserRole role;
 
-    @Column(name = "block_id")
-    private UUID blockId;
+    @Column(length = 50)
+    private String block;
 
     @Column(name = "room_number", length = 20)
     private String roomNumber;
@@ -51,13 +51,20 @@ public class User {
     }
 
     public User(String login, String passwordHash, String fullName, UserRole role,
-                UUID blockId, String roomNumber) {
+                String block, String roomNumber) {
         this.login = login;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.role = role;
-        this.blockId = blockId;
+        this.block = block;
         this.roomNumber = roomNumber;
+    }
+
+    /** Compatibility constructor for existing test fixtures. */
+    public User(String login, String passwordHash, String fullName, UserRole role,
+                UUID blockId, String roomNumber, Void... ignored) {
+        this(login, passwordHash, fullName, role,
+                blockId == null ? null : blockId.toString(), roomNumber);
     }
 
     @PrePersist
@@ -106,12 +113,28 @@ public class User {
         this.role = role;
     }
 
-    public UUID getBlockId() {
-        return blockId;
+    public String getBlock() {
+        return block;
     }
 
+    /** @deprecated use {@link #getBlock()} */
+    @Deprecated
+    public UUID getBlockId() {
+        try {
+            return block == null ? null : UUID.fromString(block);
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
+    public void setBlock(String block) {
+        this.block = block;
+    }
+
+    /** @deprecated use {@link #setBlock(String)} */
+    @Deprecated
     public void setBlockId(UUID blockId) {
-        this.blockId = blockId;
+        this.block = blockId == null ? null : blockId.toString();
     }
 
     public String getRoomNumber() {

@@ -50,7 +50,7 @@ public class AuthService {
                 passwordEncoder.encode(request.password()),
                 request.fullName(),
                 request.role(),
-                request.blockId(),
+                request.block(),
                 request.roomNumber());
 
         try {

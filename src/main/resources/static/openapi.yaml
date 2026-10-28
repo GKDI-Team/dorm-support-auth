@@ -109,13 +109,13 @@ components:
   schemas:
     CreateUserRequest:
       type: object
-      required: [login, password, fullName, role, blockId, roomNumber]
+      required: [login, password, fullName, role, block, roomNumber]
       properties:
         login: { type: string, minLength: 3, maxLength: 64 }
         password: { type: string, minLength: 8, maxLength: 128, format: password }
         fullName: { type: string, minLength: 1, maxLength: 150 }
         role: { type: string, enum: [RESIDENT, REVIEWER] }
-        blockId: { type: string, format: uuid }
+        block: { type: string, maxLength: 50, example: "11111111" }
         roomNumber: { type: string, maxLength: 20 }
     LoginRequest:
       type: object
@@ -137,7 +137,7 @@ components:
         login: { type: string }
         fullName: { type: string }
         role: { type: string, enum: [RESIDENT, REVIEWER, ADMIN] }
-        blockId: { type: string, format: uuid, nullable: true }
+        block: { type: string, nullable: true, example: "11111111" }
         roomNumber: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
     Error:

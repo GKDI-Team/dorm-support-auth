@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     full_name VARCHAR(150) NOT NULL,
     role VARCHAR(20) NOT NULL,
-    block_id UUID,
+    block VARCHAR(50),
     room_number VARCHAR(20),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_users_login UNIQUE (login)

@@ -11,9 +11,16 @@ public record UserResponse(
         String login,
         String fullName,
         UserRole role,
-        UUID blockId,
+        String block,
         String roomNumber,
         Instant createdAt) {
+
+    /** Compatibility constructor for old test fixtures. */
+    public UserResponse(UUID id, String login, String fullName, UserRole role,
+                        UUID blockId, String roomNumber, Instant createdAt) {
+        this(id, login, fullName, role,
+                blockId == null ? null : blockId.toString(), roomNumber, createdAt);
+    }
 
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -21,7 +28,7 @@ public record UserResponse(
                 user.getLogin(),
                 user.getFullName(),
                 user.getRole(),
-                user.getBlockId(),
+                user.getBlock(),
                 user.getRoomNumber(),
                 user.getCreatedAt());
     }

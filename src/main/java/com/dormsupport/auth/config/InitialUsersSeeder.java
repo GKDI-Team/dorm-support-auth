@@ -9,12 +9,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 
 @Component
 public class InitialUsersSeeder implements CommandLineRunner {
     private static final String DEVELOPMENT_PASSWORD = "123456";
-    private static final UUID DEVELOPMENT_BLOCK_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final String DEVELOPMENT_BLOCK = "11111111";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -55,7 +54,7 @@ public class InitialUsersSeeder implements CommandLineRunner {
                     passwordEncoder.encode(DEVELOPMENT_PASSWORD),
                     fullName,
                     role,
-                    role == UserRole.RESIDENT ? DEVELOPMENT_BLOCK_ID : null,
+                    role == UserRole.RESIDENT ? DEVELOPMENT_BLOCK : null,
                     roomNumber
             );
 
@@ -66,8 +65,8 @@ public class InitialUsersSeeder implements CommandLineRunner {
         User user = existingUser.get();
 
         if (role == UserRole.RESIDENT
-                && (user.getBlockId() == null || user.getRoomNumber() == null)) {
-            user.setBlockId(DEVELOPMENT_BLOCK_ID);
+                && (user.getBlock() == null || user.getRoomNumber() == null)) {
+            user.setBlock(DEVELOPMENT_BLOCK);
             user.setRoomNumber(roomNumber);
             userRepository.save(user);
         }

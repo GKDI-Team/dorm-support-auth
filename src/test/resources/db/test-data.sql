@@ -6,7 +6,7 @@ INSERT INTO users (
     password_hash,
     full_name,
     role,
-    block_id,
+    block,
     room_number,
     created_at
 )

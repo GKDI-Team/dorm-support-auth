@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
+
 public record CreateUserRequest(
         @NotBlank
         @Size(min = 3, max = 64)
@@ -23,10 +24,18 @@ public record CreateUserRequest(
         @NotNull
         UserRole role,
 
-        @NotNull
-        UUID blockId,
+        @NotBlank
+        @Size(max = 50)
+        String block,
 
         @NotBlank
         @Size(max = 20)
         String roomNumber) {
+
+    /** Compatibility constructor for old test fixtures. */
+    public CreateUserRequest(String login, String password, String fullName,
+                             UserRole role, UUID blockId, String roomNumber) {
+        this(login, password, fullName, role,
+                blockId == null ? null : blockId.toString(), roomNumber);
+    }
 }
