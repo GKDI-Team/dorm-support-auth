@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: DormSupport Identity API
+  version: 0.1.0
+  description: Admin-managed user accounts, login and current-user operations for the MVP.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Auth
+paths:
+  /health:
+    get:
+      tags: [Auth]
+      summary: Service health
+      responses:
+        '200':
+          description: Service is available
+  /api/v1/admin/users:
+    post:
+      tags: [Auth]
+      summary: Create a user account
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Administrator role required
+        '409':
+          description: Login already exists
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with login and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: JWT access token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current session
+      responses:
+        '204':
+          description: Client should remove the token
+  /internal/v1/users/{userId}:
+    get:
+      tags: [Internal]
+      summary: Get a user profile for internal services
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '404':
+          description: User not found
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateUserRequest:
+      type: object
+      required: [login, password, fullName, role, blockId, roomNumber]
+      properties:
+        login: { type: string, minLength: 3, maxLength: 64 }
+        password: { type: string, minLength: 8, maxLength: 128, format: password }
+        fullName: { type: string, minLength: 1, maxLength: 150 }
+        role: { type: string, enum: [RESIDENT, REVIEWER] }
+        blockId: { type: string, format: uuid }
+        roomNumber: { type: string, maxLength: 20 }
+    LoginRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login: { type: string }
+        password: { type: string, format: password }
+    LoginResponse:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken: { type: string }
+        user: { $ref: '#/components/schemas/User' }
+    User:
+      type: object
+      required: [id, login, fullName, role, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        login: { type: string }
+        fullName: { type: string }
+        role: { type: string, enum: [RESIDENT, REVIEWER, ADMIN] }
+        blockId: { type: string, format: uuid, nullable: true }
+        roomNumber: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Invalid credentials or missing, invalid or expired JWT
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
