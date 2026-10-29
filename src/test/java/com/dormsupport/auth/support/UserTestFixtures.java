@@ -1,4 +1,3 @@
-// TODO: Add reusable builders/factories for User, LoginRequest and CreateUserRequest.
 package com.dormsupport.auth.support;
 
 import com.dormsupport.auth.api.CreateUserRequest;
@@ -11,7 +10,7 @@ import java.util.UUID;
 public final class UserTestFixtures {
 
     private static final UUID DEFAULT_BLOCK_ID =
-            UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID.fromString("11111111");
 
     private UserTestFixtures() {
         // Utility class.

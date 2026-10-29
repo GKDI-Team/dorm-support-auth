@@ -53,7 +53,7 @@ class AuthenticationServiceTest {
         when(user.getLogin()).thenReturn("student123");
         when(user.getFullName()).thenReturn("Ivan Ivanov");
         when(user.getRole()).thenReturn(UserRole.RESIDENT);
-        when(user.getBlockId()).thenReturn(null);
+        when(user.getBlock()).thenReturn(null);
         when(user.getRoomNumber()).thenReturn("101");
         when(user.getCreatedAt()).thenReturn(Instant.parse("2026-01-01T10:00:00Z"));
         when(user.getPasswordHash()).thenReturn("encoded-password");
@@ -127,7 +127,7 @@ class AuthenticationServiceTest {
         when(user.getLogin()).thenReturn("student123");
         when(user.getFullName()).thenReturn("Ivan Ivanov");
         when(user.getRole()).thenReturn(UserRole.RESIDENT);
-        when(user.getBlockId()).thenReturn(null);
+        when(user.getBlock()).thenReturn(null);
         when(user.getRoomNumber()).thenReturn("101");
         when(user.getCreatedAt()).thenReturn(Instant.parse("2026-01-01T10:00:00Z"));
 

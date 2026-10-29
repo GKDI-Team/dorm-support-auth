@@ -1,4 +1,3 @@
-// TODO: Test mapping of authentication and validation exceptions to API errors.
 package com.dormsupport.auth.api;
 
 import org.junit.jupiter.api.BeforeEach;

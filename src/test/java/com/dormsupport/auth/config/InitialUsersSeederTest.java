@@ -1,5 +1,3 @@
-// TODO: Test development account seeding.
-// TODO: Check that expected accounts are created once and duplicates are not added.
 package com.dormsupport.auth.config;
 
 import com.dormsupport.auth.user.User;
@@ -13,9 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -25,8 +22,7 @@ import static org.mockito.Mockito.*;
 class InitialUsersSeederTest {
 
     private static final String DEVELOPMENT_PASSWORD = "123456";
-    private static final UUID DEVELOPMENT_BLOCK_ID =
-            UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final String DEVELOPMENT_BLOCK = "11111111";
 
     @Mock
     private UserRepository userRepository;
@@ -38,12 +34,12 @@ class InitialUsersSeederTest {
 
     @BeforeEach
     void setUp() {
-        
     }
 
     @Test
     void run_whenSeedingDisabled_doesNotCreateUsers() {
-        seeder = new InitialUsersSeeder(userRepository, passwordEncoder, false);
+        seeder = new InitialUsersSeeder(
+                userRepository, passwordEncoder, false);
 
         seeder.run();
 
@@ -53,10 +49,11 @@ class InitialUsersSeederTest {
 
     @Test
     void run_whenSeedingEnabled_createsExpectedAccounts() {
-        seeder = new InitialUsersSeeder(userRepository, passwordEncoder, true);
+        seeder = new InitialUsersSeeder(
+                userRepository, passwordEncoder, true);
 
         when(passwordEncoder.encode(DEVELOPMENT_PASSWORD))
-        .thenReturn("encoded-password");
+                .thenReturn("encoded-password");
 
         when(userRepository.findByLogin(anyString()))
                 .thenReturn(Optional.empty());
@@ -64,15 +61,15 @@ class InitialUsersSeederTest {
         seeder.run();
 
         verify(userRepository, times(8)).findByLogin(anyString());
-        verify(passwordEncoder, times(8)).encode(DEVELOPMENT_PASSWORD);
+        verify(passwordEncoder, times(8))
+                .encode(DEVELOPMENT_PASSWORD);
         verify(userRepository, times(8)).save(any(User.class));
     }
 
     @Test
     void run_whenAccountsAlreadyExist_doesNotEncodePasswordsOrSaveCompleteResidents() {
-        seeder = new InitialUsersSeeder(userRepository, passwordEncoder, true);
-
-        UUID blockId = UUID.randomUUID();
+        seeder = new InitialUsersSeeder(
+                userRepository, passwordEncoder, true);
 
         when(userRepository.findByLogin(anyString()))
                 .thenAnswer(invocation -> {
@@ -88,13 +85,17 @@ class InitialUsersSeederTest {
                         case "demian.admin" -> createUser(
                                 login, "Demian", UserRole.ADMIN, null, null);
                         case "german" -> createUser(
-                                login, "German", UserRole.RESIDENT, blockId, "101");
+                                login, "German", UserRole.RESIDENT,
+                                DEVELOPMENT_BLOCK, "101");
                         case "kate" -> createUser(
-                                login, "Kate", UserRole.RESIDENT, blockId, "102");
+                                login, "Kate", UserRole.RESIDENT,
+                                DEVELOPMENT_BLOCK, "102");
                         case "java" -> createUser(
-                                login, "Java", UserRole.RESIDENT, blockId, "103");
+                                login, "Java", UserRole.RESIDENT,
+                                DEVELOPMENT_BLOCK, "103");
                         case "demian" -> createUser(
-                                login, "Demian", UserRole.RESIDENT, blockId, "104");
+                                login, "Demian", UserRole.RESIDENT,
+                                DEVELOPMENT_BLOCK, "104");
                         default -> throw new IllegalArgumentException(
                                 "Unexpected login: " + login);
                     });
@@ -109,7 +110,8 @@ class InitialUsersSeederTest {
 
     @Test
     void run_whenExistingResidentHasMissingBlockId_updatesResident() {
-        seeder = new InitialUsersSeeder(userRepository, passwordEncoder, true);
+        seeder = new InitialUsersSeeder(
+                userRepository, passwordEncoder, true);
 
         User resident = createUser(
                 "german", "German", UserRole.RESIDENT, null, "101");
@@ -117,35 +119,36 @@ class InitialUsersSeederTest {
         when(userRepository.findByLogin("german"))
                 .thenReturn(Optional.of(resident));
 
-        when(userRepository.findByLogin(argThat(login ->
-                !"german".equals(login))))
+        when(userRepository.findByLogin(argThat(
+                login -> !"german".equals(login))))
                 .thenReturn(Optional.of(createExistingAdminOrResident()));
 
         seeder.run();
 
-        assertEquals(DEVELOPMENT_BLOCK_ID, resident.getBlockId());
+        assertEquals(DEVELOPMENT_BLOCK, resident.getBlock());
         assertEquals("101", resident.getRoomNumber());
         verify(userRepository).save(resident);
     }
 
     @Test
     void run_whenExistingResidentHasMissingRoomNumber_updatesResident() {
-        seeder = new InitialUsersSeeder(userRepository, passwordEncoder, true);
+        seeder = new InitialUsersSeeder(
+                userRepository, passwordEncoder, true);
 
-        UUID blockId = UUID.randomUUID();
         User resident = createUser(
-                "kate", "Kate", UserRole.RESIDENT, blockId, null);
+                "kate", "Kate", UserRole.RESIDENT,
+                DEVELOPMENT_BLOCK, null);
 
         when(userRepository.findByLogin("kate"))
                 .thenReturn(Optional.of(resident));
 
-        when(userRepository.findByLogin(argThat(login ->
-                !"kate".equals(login))))
+        when(userRepository.findByLogin(argThat(
+                login -> !"kate".equals(login))))
                 .thenReturn(Optional.of(createExistingAdminOrResident()));
 
         seeder.run();
 
-        assertEquals(DEVELOPMENT_BLOCK_ID, resident.getBlockId());
+        assertEquals(DEVELOPMENT_BLOCK, resident.getBlock());
         assertEquals("102", resident.getRoomNumber());
         verify(userRepository).save(resident);
     }
@@ -154,7 +157,7 @@ class InitialUsersSeederTest {
             String login,
             String fullName,
             UserRole role,
-            UUID blockId,
+            String block,
             String roomNumber) {
 
         return new User(
@@ -162,7 +165,7 @@ class InitialUsersSeederTest {
                 "encoded-password",
                 fullName,
                 role,
-                blockId,
+                block,
                 roomNumber);
     }
 
