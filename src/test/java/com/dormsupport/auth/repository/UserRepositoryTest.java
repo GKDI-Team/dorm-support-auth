@@ -1,4 +1,3 @@
-// TODO: JPA repository tests for login uniqueness and user lookup by login.
 package com.dormsupport.auth.repository;
 
 import org.junit.jupiter.api.Test;
